@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio OS
 
-## Getting Started
+A dark, immersive creative developer portfolio built with Awwwards-level polish. Featuring a 3D singularity particle field, magnetic cursor, cinematic preloader, and buttery-smooth scroll.
 
-First, run the development server:
+## ✦ Features
+
+- **3D Singularity Particle Field** — 20,000 particles orbiting a gravitational core with cursor-reactive physics, built with Three.js + React Three Fiber
+- **Magnetic Custom Cursor** — Dot + ring cursor with magnetic pull on interactive elements and elastic snap-back
+- **Scramble Decode Preloader** — Loading bar with glitch-style text reveal and curtain-split page entrance
+- **Film Grain Overlay** — Subtle animated SVG noise texture for cinematic depth
+- **Smooth Scroll** — Lenis-powered buttery scrolling with custom easing
+- **GSAP Animations** — Staggered entrance animations, scramble text effects, and timeline orchestration
+
+## ✦ Tech Stack
+
+| Layer      | Tech                                |
+| ---------- | ----------------------------------- |
+| Framework  | Next.js 16 + React 19               |
+| Language   | TypeScript                          |
+| 3D         | Three.js + React Three Fiber + Drei |
+| Animation  | GSAP + Framer Motion                |
+| Scroll     | Lenis                               |
+| Styling    | Tailwind CSS 4 + CSS Variables      |
+| Typography | Syne · DM Sans · JetBrains Mono     |
+| Deployment | Vercel                              |
+
+## ✦ Getting Started
 
 ```bash
+# Install dependencies
+npm install
+
+# Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✦ Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                  # Next.js app router
+│   ├── globals.css       # CSS variables, grain overlay, scrollbar
+│   ├── layout.tsx        # Root layout with ClientShell wrapper
+│   └── page.tsx          # Home page
+├── components/
+│   ├── sections/
+│   │   └── Hero.tsx      # Hero section with scramble name + CTAs
+│   ├── three/
+│   │   ├── Scene.tsx     # R3F Canvas setup
+│   │   └── ParticleField.tsx  # Singularity particle system
+│   └── ui/
+│       ├── ClientShell.tsx    # Preloader + cursor + grain orchestrator
+│       ├── CustomCursor.tsx   # Magnetic cursor component
+│       ├── Preloader.tsx      # Loading animation
+│       └── SmoothScroll.tsx   # Lenis scroll wrapper
+└── data/
+    └── moncito.ts        # Portfolio content data
+```
 
-## Learn More
+## ✦ Design Philosophy
 
-To learn more about Next.js, take a look at the following resources:
+Inspired by Awwwards SOTD portfolios like Dennis Snellenberg, Aristide Benoist, and Greg Lallé. Dark-mode-first with an indigo/purple accent system, monospace UI elements for a dev/terminal aesthetic, and cinematic overlays (vignette, scanlines, grain) for depth.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ✦ License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+MIT
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built by [Moncito Glenn N. Hernandez](https://github.com/Moncito)

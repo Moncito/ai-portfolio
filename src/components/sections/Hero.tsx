@@ -1,33 +1,110 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import gsap from "gsap";
 import { ArrowDown, Sparkles } from "lucide-react";
 import { MONCITO_DATA } from "@/data/moncito";
 
-// Dynamically import Scene to avoid SSR issues with Three.js
 const Scene = dynamic(() => import("@/components/three/Scene"), {
   ssr: false,
   loading: () => null,
 });
 
-const letterVariants = {
-  hidden: { opacity: 0, y: 80, rotateX: -90 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: {
-      delay: i * 0.08,
-      duration: 0.7,
-      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-    },
-  }),
-};
-
 const name = MONCITO_DATA.nickname.toUpperCase();
 
+// Scramble decode characters
+const GLITCH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*<>{}[]";
+
+function scrambleDecode(
+  el: HTMLElement,
+  finalText: string,
+  duration: number = 1.2
+) {
+  const length = finalText.length;
+  const obj = { progress: 0 };
+
+  gsap.to(obj, {
+    progress: 1,
+    duration,
+    ease: "power2.inOut",
+    onUpdate() {
+      let display = "";
+      for (let i = 0; i < length; i++) {
+        const charProgress = (obj.progress - i / length / 1.5) * 2;
+        if (charProgress >= 1) {
+          display += finalText[i];
+        } else {
+          display +=
+            GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+        }
+      }
+      el.textContent = display;
+    },
+    onComplete() {
+      el.textContent = finalText;
+    },
+  });
+}
+
 export default function Hero() {
+  const nameRef     = useRef<HTMLDivElement>(null);
+  const badgeRef    = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef      = useRef<HTMLDivElement>(null);
+  const scrollRef   = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    // Badge entrance
+    tl.fromTo(
+      badgeRef.current,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.6 },
+      0.3
+    );
+
+    // Name scramble decode
+    if (nameRef.current) {
+      tl.add(() => scrambleDecode(nameRef.current!, name, 1.4), 0.6);
+      tl.fromTo(
+        nameRef.current,
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.8 },
+        0.6
+      );
+    }
+
+    // Subtitle entrance
+    tl.fromTo(
+      subtitleRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.7 },
+      1.4
+    );
+
+    // CTA buttons entrance
+    tl.fromTo(
+      ctaRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.7 },
+      1.7
+    );
+
+    // Scroll indicator
+    tl.fromTo(
+      scrollRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 1 },
+      2.5
+    );
+
+    return () => {
+      tl.kill();
+    };
+  }, []);
+
   return (
     <section
       style={{
@@ -41,31 +118,31 @@ export default function Hero() {
         justifyContent: "center",
       }}
     >
-      {/* 3D Canvas Background */}
+      {/* 3D Canvas Background — z-index set in Scene.tsx to 0 */}
       <Scene />
 
-      {/* Radial gradient overlay for depth */}
+      {/* Edge vignette — soft edges only, particles show through center */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(ellipse at center, transparent 30%, #0a0a0a 100%)",
+          background: `radial-gradient(ellipse 80% 80% at 50% 50%,
+            transparent 55%,
+            rgba(10,10,10,0.2) 75%,
+            rgba(10,10,10,0.5) 100%
+          )`,
           pointerEvents: "none",
           zIndex: 1,
         }}
       />
 
-      {/* Grid overlay for tech feel */}
+      {/* Scanline overlay */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
+          backgroundImage:
+            "repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px)",
           pointerEvents: "none",
           zIndex: 1,
         }}
@@ -83,10 +160,8 @@ export default function Hero() {
         }}
       >
         {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+        <div
+          ref={badgeRef}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -101,53 +176,38 @@ export default function Hero() {
             letterSpacing: "0.1em",
             marginBottom: "2rem",
             backdropFilter: "blur(10px)",
+            opacity: 0,
           }}
         >
           <Sparkles size={12} />
           {MONCITO_DATA.year} · {MONCITO_DATA.school.split(" - ")[0]}
-        </motion.div>
+        </div>
 
-        {/* Animated Name */}
+        {/* Scramble Name */}
         <div
+          ref={nameRef}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "0.05em",
+            fontSize: "clamp(2.5rem, 10vw, 6rem)",
+            fontFamily: "Syne, sans-serif",
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
             marginBottom: "0.5rem",
-            perspective: "800px",
+            background:
+              "linear-gradient(160deg, #ffffff 0%, #e0e7ff 25%, #a5b4fc 55%, #6366f1 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            filter: "drop-shadow(0 0 40px rgba(99,102,241,0.4))",
+            opacity: 0,
           }}
         >
-          {name.split("").map((letter, i) => (
-            <motion.span
-              key={i}
-              custom={i}
-              variants={letterVariants}
-              initial="hidden"
-              animate="visible"
-              style={{
-                fontSize: "clamp(3.5rem, 12vw, 9rem)",
-                fontFamily: "Syne, sans-serif",
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                lineHeight: 1,
-                display: "inline-block",
-                background:
-                  "linear-gradient(135deg, #f8fafc 0%, #818cf8 50%, #a855f7 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              {letter}
-            </motion.span>
-          ))}
+          {name}
         </div>
 
         {/* Role */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.0 }}
+        <p
+          ref={subtitleRef}
           style={{
             fontSize: "clamp(0.9rem, 2.5vw, 1.15rem)",
             color: "var(--text-secondary)",
@@ -156,26 +216,27 @@ export default function Hero() {
             letterSpacing: "0.02em",
             marginBottom: "2.5rem",
             lineHeight: 1.6,
+            opacity: 0,
           }}
         >
           {MONCITO_DATA.role}
-        </motion.p>
+        </p>
 
         {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.2 }}
+        <div
+          ref={ctaRef}
           style={{
             display: "flex",
             gap: "1rem",
             justifyContent: "center",
             flexWrap: "wrap",
+            opacity: 0,
           }}
         >
           {/* Primary CTA */}
           <a
             href="#projects"
+            data-magnetic
             style={{
               padding: "0.75rem 2rem",
               borderRadius: "8px",
@@ -208,6 +269,7 @@ export default function Hero() {
             href={MONCITO_DATA.github}
             target="_blank"
             rel="noopener noreferrer"
+            data-magnetic
             style={{
               padding: "0.75rem 2rem",
               borderRadius: "8px",
@@ -236,19 +298,22 @@ export default function Hero() {
               (e.target as HTMLElement).style.background = "transparent";
             }}
           >
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            <svg
+              width={16}
+              height={16}
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
             </svg>
             GitHub
           </a>
-        </motion.div>
+        </div>
       </div>
 
       {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
+      <div
+        ref={scrollRef}
         style={{
           position: "absolute",
           bottom: "2rem",
@@ -260,6 +325,7 @@ export default function Hero() {
           alignItems: "center",
           gap: "0.5rem",
           color: "var(--text-muted)",
+          opacity: 0,
         }}
       >
         <span
@@ -272,13 +338,14 @@ export default function Hero() {
         >
           scroll
         </span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+        <div
+          style={{
+            animation: "float 1.5s ease-in-out infinite",
+          }}
         >
           <ArrowDown size={16} />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Corner decorations */}
       <div

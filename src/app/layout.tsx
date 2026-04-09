@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SmoothScroll from "@/components/ui/SmoothScroll";
+import ClientShell from "@/components/ui/ClientShell";
 
 export const metadata: Metadata = {
   title: "Moncito Glenn — Portfolio OS",
@@ -20,7 +22,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <ClientShell>
+          <SmoothScroll>{children}</SmoothScroll>
+        </ClientShell>
+      </body>
     </html>
   );
 }
